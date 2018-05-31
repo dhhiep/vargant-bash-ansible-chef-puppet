@@ -1,0 +1,1 @@
+# vargant-bash-ansible-chef-puppet
