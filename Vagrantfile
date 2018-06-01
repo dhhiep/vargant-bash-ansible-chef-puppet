@@ -24,6 +24,10 @@ Vagrant.configure(2) do |config|
 
   config.vm.define :chef do |app|
     app.vm.network :forwarded_port, guest: 80, host: 8083
+    app.vm.provision :chef_solo do |chef|
+      chef.cookbooks_path = 'provisioners/chef/cookbooks'
+      chef.add_recipe 'apache2'
+    end
   end
 
   config.vm.define :puppet do |app|

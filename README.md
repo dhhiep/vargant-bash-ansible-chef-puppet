@@ -42,12 +42,20 @@
 
   ```
 
-  3. Run command in guess machine
+  3. Add config provision to shell to Varantfile
+  ```
+  config.vm.define :bash do |app|
+    app.vm.network :forwarded_port, guest: 80, host: 8081
+    app.vm.provision :shell, path: 'provisioners/bash/install_apache2.sh'
+  end
+  ```
+
+  4. Run command in guess machine
   ```bash
   vagrant up bash
   ```
 
-  4. Test web server. Open web browser
+  5. Test web server. Open web browser
   ```
   http://localhost:8081
   ```
@@ -94,12 +102,60 @@
       state: link
   ```
 
-  5. Start guest machine
+  5. Add config provision to chef_solo to Varantfile
+  ```
+  config.vm.define :ansible do |app|
+    app.vm.network :forwarded_port, guest: 80, host: 8082
+
+    app.vm.provision :ansible do |ansible|
+      ansible.playbook = "provisioners/ansible/playbook.yml"
+    end
+  end
+  ```
+
+  6. Start guest machine
   ```bash
   vagrant up ansible
   ```
 
-  6. Test web server. Open web browser
+  7. Test web server. Open web browser
   ```
-  http://localhost:8081
+  http://localhost:8082
+  ```
+
+#### Step by step for server with provisioner is Chef
+  1. Preparing directories structure
+  ```
+  mkdir -p provisioners/chef/cookbooks/apache2/recipes/
+  ```
+
+  2. Add execute file (provisioners/chef/cookbooks/apache2/recipes/default.rb)
+  ```
+  execute 'apt-get update'
+  package 'apache2'
+  execute 'rm -rf /var/www'
+  link '/var/www' do
+    to '/vagrant'
+  end
+  ```
+
+  3. Add config provision to chef_solo to Varantfile
+  ```
+  config.vm.define :chef do |app|
+    app.vm.network :forwarded_port, guest: 80, host: 8083
+    app.vm.provision :chef_solo do |chef|
+      chef.cookbooks_path = 'provisioners/chef/cookbooks'
+      chef.add_recipe 'apache2'
+    end
+  end
+  ```
+
+  4. Start guest machine
+  ```bash
+  vagrant up chef
+  ```
+
+  5. Test web server. Open web browser
+  ```
+  http://localhost:8083
   ```
