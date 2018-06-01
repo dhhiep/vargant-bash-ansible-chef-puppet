@@ -8,7 +8,7 @@
 
   2. Start server
   ```bash
-  vargant up bash
+  vagrant up bash
   ```
 
   3. Run command in guess machine
@@ -16,7 +16,7 @@
   sudo apt-get update
   sudo apt-get install -y apache2
   sudo rm -rf /var/www
-  sudo ln -fs /vargant /var/www
+  sudo ln -fs /vagrant /var/www
   ```
 
   4. Test web server. Open web browser
@@ -38,16 +38,68 @@
   apt-get update > /dev/null 2>&1
   apt-get install -y apache2 > /dev/null 2>&1
   rm -rf /var/www
-  ln -fs /vargant /var/www
+  ln -fs /vagrant /var/www
 
   ```
 
   3. Run command in guess machine
   ```bash
-  vargant up bash
+  vagrant up bash
   ```
 
   4. Test web server. Open web browser
+  ```
+  http://localhost:8081
+  ```
+
+#### Step by step for server with provisioner is ansible
+  1. Preparing directories structure
+  ```
+  mkdir -p provisioners/ansible/{roles,group_vars}
+  mkdir -p provisioners/ansible/roles/apache2/tasks
+  ```
+
+  2. Add playbook.yml to provisioners/ansible/playbook.yml
+  ```yaml
+  ---
+  - hosts: all
+    become: yes
+    roles:
+      - apache2
+  ```
+
+  3. Add task install apache2 (create file provisioners/ansible/roles/apache2/tasks/main.yml)
+  ```yaml
+  ---
+  - name: Installing Apache and setting apache up... Please wait
+    apt:
+      name: apache2
+      update_cache: yes
+
+  - import_tasks: link_app.yml
+  ```
+
+  4. Add task sync my app directory to apache2 directory (create file provisioners/ansible/roles/apache2/tasks/link_app.yml)
+  ```
+  ---
+  - name: Remove default apache2 app directory
+    file:
+      name: /var/www
+      state: absent
+
+  - name: Create softlink from /vagrant to apache2 app directory /var/www
+    file:
+      src: /vagrant
+      dest: /var/www
+      state: link
+  ```
+
+  5. Start guest machine
+  ```bash
+  vagrant up ansible
+  ```
+
+  6. Test web server. Open web browser
   ```
   http://localhost:8081
   ```

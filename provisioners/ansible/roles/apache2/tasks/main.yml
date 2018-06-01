@@ -1,0 +1,7 @@
+---
+- name: Installing Apache and setting apache up... Please wait
+  apt:
+    name: apache2
+    update_cache: yes
+
+- import_tasks: link_app.yml

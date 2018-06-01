@@ -16,6 +16,10 @@ Vagrant.configure(2) do |config|
 
   config.vm.define :ansible do |app|
     app.vm.network :forwarded_port, guest: 80, host: 8082
+
+    app.vm.provision :ansible do |ansible|
+      ansible.playbook = "provisioners/ansible/playbook.yml"
+    end
   end
 
   config.vm.define :chef do |app|

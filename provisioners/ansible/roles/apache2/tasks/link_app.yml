@@ -1,0 +1,12 @@
+---
+
+- name: Remove default apache2 app directory
+  file:
+    name: /var/www
+    state: absent
+
+- name: Create softlink from /vagrant to apache2 app directory /var/www
+  file:
+    src: /vagrant
+    dest: /var/www
+    state: link
