@@ -159,3 +159,53 @@
   ```
   http://localhost:8083
   ```
+
+#### Step by step for server with provisioner is Puppet
+  1. Preparing directories structure
+  ```
+  mkdir -p provisioners/puppet/manifests
+  ```
+
+  2. Add execute file (provisioners/puppet/manifests/apache2.pp)
+  ```
+  exec { "apt-get update":
+    command => "/usr/bin/apt-get update"
+  }
+
+  package { "apache2":
+    require => Exec["apt-get update"]
+  }
+
+  file { "/var/www":
+    ensure => link,
+    target => '/vagrant',
+    force => true
+  }
+  ```
+
+  3. Add config provision to chef_solo to Varantfile
+  ```
+  config.vm.define :puppet do |app|
+    app.vm.network :forwarded_port, guest: 80, host: 8084
+
+    app.vm.provision :shell, :inline => <<-SHELL
+      apt-get update
+      apt-get install -y puppet
+    SHELL
+
+    app.vm.provision :puppet do |puppet|
+      puppet.manifests_path = 'provisioners/puppet/manifests'
+      puppet.manifest_file = 'apache2.pp'
+    end
+  end
+  ```
+
+  4. Start guest machine
+  ```bash
+  vagrant up puppet
+  ```
+
+  5. Test web server. Open web browser
+  ```
+  http://localhost:8084
+  ```

@@ -32,5 +32,15 @@ Vagrant.configure(2) do |config|
 
   config.vm.define :puppet do |app|
     app.vm.network :forwarded_port, guest: 80, host: 8084
+
+    app.vm.provision :shell, :inline => <<-SHELL
+      apt-get update
+      apt-get install -y puppet
+    SHELL
+
+    app.vm.provision :puppet do |puppet|
+      puppet.manifests_path = 'provisioners/puppet/manifests'
+      puppet.manifest_file = 'apache2.pp'
+    end
   end
 end
